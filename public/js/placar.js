@@ -3,7 +3,6 @@ $("#botao-sync").click(sincronizaPlacar);
 
 function scrollPlacar() {
   var posicao = $(".placar").offset().top;
-  console.log(posicao);
   $("html,body").animate({
     scrollTop: posicao + "px"
   }, 1000);
@@ -11,7 +10,7 @@ function scrollPlacar() {
 
 function inserePlacar() {
   var corpoTabela = $(".placar").find("tbody");
-  var usuario = "Bichão";
+  var usuario = $("#usuarios").val();
   var numeroPalavras = $("#contador-palavras").text();
 
   var linha = novaLinha(usuario, numeroPalavras);
@@ -52,17 +51,50 @@ function removerPlacar(event) {
 
 function mostraPlacar() {
   $(".placar").stop().slideToggle(2000);
+  scrollPlacar();
 }
 
 function sincronizaPlacar() {
-  $("#spinner").toggle();
-  .fail(function() {
-    $("#erro").toggle();
-    setTimeout(function() {
-      $("#erro").toggle();
-    },2500);
+  var placar = [];
+  var linhas = $("tbody>tr");
+  linhas.each(function() {
+    var usuario = $(this).find("td:nth-child(1)").text();
+    var palavras = $(this).find("td:nth-child(2)").text();
+
+    var score = {
+      usuario: usuario,
+      pontos: palavras
+    }
+
+    placar.push(score);
+  });
+
+  var dados = {
+    placar: placar
+  }
+
+  $.post("http://localhost:3000/placar", dados, function() {
+    console.log("Salvo!");
+    $(".tooltip").tooltipster("open").tooltipster("content", "Sucesso ao Sincronizar!");
   })
-  .always(function(){
-    $("#spinner").toggle();
+  .always(function() {
+    setTimeout(function () {
+      $(".tooltip").tooltipster("close");
+    },1200);
+  })
+  .fail(function () {
+    $(".tooltip").tooltipster("open").tooltipster("content", "Falha ao Sincronizar!");
+
+  });
+
+}
+
+function atualizaPlacar() {
+  $.get("http://localhost:3000/placar", function(data) {
+    $(data).each(function() {
+      var linha = novaLinha(this.usuario, this.pontos);
+      linha.find(".botao-remover").click(removerPlacar);
+      $("tbody").append(linha);
+    });
   });
 }

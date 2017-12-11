@@ -6,8 +6,17 @@ $(function() {
   inicializaCronometro();
   inicializaContadores();
   inicializaMarcadores();
+  atualizaPlacar();
   $("#botao-reiniciar").on("click", reiniciaJogo);
 
+  $("#usuarios").selectize({
+    create: true,
+    sortField: 'text'
+  });
+
+  $(".tooltip").tooltipster({
+    trigger: "custom"
+  });
 });
 
 function atualizaTamanhoFrase() {
